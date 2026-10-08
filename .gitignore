@@ -1,0 +1,19 @@
+# Local research, screenshots, and temporary work
+.work/
+tests/
+
+# Dependencies and local configuration
+node_modules/
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+
+# OS and runtime artifacts
+.DS_Store
+Thumbs.db
+Desktop.ini
+__pycache__/
+*.pyc
+*.log

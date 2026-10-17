@@ -8,7 +8,7 @@ See a mathematical pattern, then hear it play. Sonograph is a browser-based coll
 
 ## Explore
 
-- Browse searchable curve previews in the collection, or jump to the next pattern.
+- Browse and search the pattern library, or jump to the next pattern.
 - Play mathematical curves, parametric shapes, rhythmic constructions, and original short compositions.
 - Watch geometric scores animate with their musical events.
 - Switch between Vivid and Original sound, with 7-second or 14-second scans.
@@ -35,17 +35,18 @@ Click **Play sound** to enable audio. Playback pauses when the page goes into th
 
 | Control | Action |
 | --- | --- |
-| Collection | Browse, search, and filter all 191 patterns. |
+| Library | Browse and search all 191 patterns by category. On narrow screens, open it with Browse. |
 | Next pattern | Generate a new seeded pattern. |
 | Play / Pause / Restart | Control playback and the visual scan. |
+| Progress bar | Click or drag to seek; arrow keys step through the scan. |
 | Sound | Choose Vivid synthesis or the Original curve-to-tone renderer. |
-| Scan | Choose 7 or 14 seconds without transposing the pitch mapping. |
+| Length | Choose 7 or 14 seconds without transposing the pitch mapping. |
 | Volume | Adjust playback loudness. |
 | Copy seed / Load seed | Save or recreate a pattern. |
-| About this pattern | View equation details, voices, and references. |
-| Space / N | Play or pause / next pattern when focus is outside a control. |
+| Equation | View the equation, its definitions, voices, and reference. On phones, Details opens the definitions and playback settings. |
+| Space / N / `/` | Play or pause / next pattern / search, when focus is outside a control. |
 
-Some music machines expose additional controls below their canvas. Press Escape to close the collection.
+Some music machines expose additional controls below their canvas. Press Escape to close the library drawer.
 
 ## Seeds and sound
 
@@ -66,8 +67,8 @@ Vivid synthesis includes harmonic voices, FM, plucked strings, granular chirplet
 | `dist/machines*.js`, `dist/machine-controls.js`, `dist/songs.js` | Interactive music machines and short compositions. |
 | `dist/performances*.js`, `dist/kinetic-scores.js` | Geometric musical scores and their rendering. |
 | `dist/curve-play.js`, `dist/continuous-curves.js` | Original pitch functions and unbroken continuous curves. |
-| `dist/sound.js`, `dist/player.js`, `dist/collection.js` | Synthesis, playback, controls, and collection browsing. |
-| `dist/*.css` | Responsive interface styles. |
+| `dist/sound.js`, `dist/player.js`, `dist/library.js` | Synthesis, playback, and the library sidebar, settings, and seeking. |
+| `dist/app.css` | Responsive interface styles. |
 | `dist/*-*.html` | Browser-readable equation and listening notes. |
 | `docs/images/` | README screenshots. |
 | `.github/workflows/pages.yml` | GitHub Pages deployment. |

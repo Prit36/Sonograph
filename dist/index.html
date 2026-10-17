@@ -3,13 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#f7f8fa">
+  <meta name="theme-color" content="#f6f7f9">
   <meta name="description" content="Explore procedural mathematical curves and their sound. Copy a seed to recreate the same equation, pattern, and sound in your browser.">
   <title>Sonograph</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Cpath d='M5 16q4-18 8 0t8 0 6 0' fill='none' stroke='white' stroke-width='2.5'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="polish.css?v=20261007-minimal">
-  <link rel="stylesheet" href="collection.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="app.css?v=20261017">
   <script src="engine.js" defer></script>
   <script src="catalog.js" defer></script>
   <script src="equations.js" defer></script>
@@ -26,36 +27,76 @@
   <script src="continuous-curves.js?v=20261008-final" defer></script>
   <script src="tunes.js?v=20261017" defer></script>
   <script src="sound.js?v=20261017-bytebeat" defer></script>
-  <script src="player.js?v=20261017" defer></script>
+  <script src="player.js?v=20261017-ui" defer></script>
   <script src="machine-controls.js" defer></script>
-  <script src="collection.js?v=20261008-curves" defer></script>
-  <link rel="stylesheet" href="machines.css">
+  <script src="library.js?v=20261017" defer></script>
 </head>
 <body>
-  <main class="app">
-    <header class="header">
-      <a class="brand" href="./" aria-label="Sonograph home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 16q4-18 8 0t8 0 10 0"/></svg><span>sonograph<span class="brand-dot">.</span></span></a>
-      <button id="open-collection" class="button secondary collection-button" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Collection <span class="collection-count">191</span></button>
-    </header>
-    <section class="workspace" aria-label="Mathematical sound explorer">
-      <div class="workspace-head"><div><h1 id="pattern-name">Recamán's leaps</h1></div><button id="next" class="button primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4M4 7h16M8 13l-4 4 4 4m12-4H4"/></svg>Next pattern</button></div>
-      <div class="plot-shell"><canvas id="plot" role="img" aria-label="Graph of the generated mathematical function"></canvas><div class="plot-caption"><span id="domain-label">−8 ≤ x ≤ 8</span></div></div>
-      <div id="machine-controls" class="machine-controls" aria-label="Machine controls" hidden></div>
-      <div class="equation" id="equation" aria-label="Generated equation"></div>
-      <details id="pattern-info" class="pattern-info"><summary>About this pattern</summary><div class="pattern-notes"><p id="pattern-definitions"></p><div class="pattern-reference"><span id="pattern-voice"></span><a id="pattern-reference" target="_blank" rel="noopener noreferrer">Mathematical reference</a></div></div></details>
-      <div class="sound-controls" aria-label="Sound settings"><label for="sound-mode">Sound <select id="sound-mode"><option value="vivid">Vivid</option><option value="original">Original</option></select></label><label for="scan-duration">Scan <select id="scan-duration"><option value="7">7 seconds</option><option value="14">14 seconds</option></select></label></div>
-      <div class="transport"><div class="transport-left"><button id="play" class="button play" aria-label="Play sound"><svg id="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 11 7-11 7Z"/></svg><span id="play-label">Play sound</span></button><button id="restart" class="icon-button" aria-label="Restart pattern" title="Restart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 8M4 4v6h6"/></svg></button><span class="time" id="time">0:00 <span>/ 0:07</span></span></div><label class="volume"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 5-6 5H2v4h3l6 5ZM15 8a6 6 0 0 1 0 8m3-19a11 11 0 0 1 0 22"/></svg><span class="sr-only">Volume</span><input id="volume" type="range" min="0" max="100" value="35" aria-label="Volume"><output id="volume-value">35%</output></label></div>
-      <div class="progress-track" id="progress-track"><div id="progress"></div></div>
-      <form class="seed-row" id="seed-form"><label for="seed">Seed</label><div class="seed-controls"><input id="seed" name="seed" type="text" autocomplete="off" spellcheck="false" maxlength="128"><button id="copy" class="icon-button" type="button" aria-label="Copy seed" title="Copy seed"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 8V4H4v11h4"/></svg></button><button class="button secondary" type="submit">Load seed</button></div></form>
-      <p id="status" class="status" role="status" aria-live="polite" hidden></p>
-    </section>
-  </main>
-  <dialog id="collection-dialog" aria-labelledby="collection-title">
-    <div class="collection-header"><div><h2 id="collection-title">Pattern collection</h2></div><button id="close-collection" class="icon-button" aria-label="Close collection"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-    <div class="collection-filters"><label class="collection-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><span class="sr-only">Search patterns</span><input id="collection-search" type="search" placeholder="Search patterns…" autocomplete="off"></label><label><span class="sr-only">Pattern category</span><select id="collection-category" aria-label="Pattern category"><option value="all">All categories</option></select></label></div>
-    <div class="collection-results"><span id="collection-results-count" role="status">191 patterns</span></div>
-    <div id="collection-grid" class="collection-grid"></div>
-    <p id="collection-empty" class="collection-empty" hidden>No matching patterns.</p>
-  </dialog>
+  <div class="shell">
+    <aside class="library" id="library" aria-label="Pattern library">
+      <div class="library-head">
+        <a class="brand" href="./" aria-label="Sonograph home"><span class="brand-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 16q4-18 8 0t8 0 6 0"/></svg></span><span>Sonograph</span></a>
+        <button id="close-library" class="icon-button library-close" type="button" aria-label="Close library"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      </div>
+      <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg><span class="sr-only">Search patterns</span><input id="library-search" type="search" placeholder="Search patterns" autocomplete="off" spellcheck="false"><kbd>/</kbd></label>
+      <nav id="library-list" class="library-list" aria-label="Patterns"></nav>
+      <p id="library-empty" class="library-empty" hidden>No matching patterns.</p>
+      <div class="library-foot"><span id="library-count">191 patterns</span><a href="https://github.com/Prit36/Sonograph" target="_blank" rel="noopener noreferrer">GitHub</a></div>
+    </aside>
+    <div class="scrim" id="scrim" hidden></div>
+
+    <main class="main">
+      <header class="topbar">
+        <button id="open-library" class="button secondary" type="button" aria-controls="library" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Browse</button>
+        <a class="brand" href="./" aria-label="Sonograph home"><span class="brand-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 16q4-18 8 0t8 0 6 0"/></svg></span><span>Sonograph</span></a>
+      </header>
+
+      <section class="title-row" aria-labelledby="pattern-name">
+        <div class="title-text"><p class="eyebrow" id="pattern-group">Number tunes</p><h1 id="pattern-name">Recamán's leaps</h1></div>
+        <button id="next" class="button secondary" type="button" aria-label="Next pattern" title="Next pattern (N)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4M4 7h16M8 13l-4 4 4 4m12-4H4"/></svg><span class="button-label">Next pattern</span><kbd>N</kbd></button>
+      </section>
+
+      <div class="workspace">
+      <section class="stage" aria-label="Pattern player">
+        <div class="plot-shell"><canvas id="plot" role="img" aria-label="Graph of the generated mathematical function"></canvas><span id="domain-label" class="domain-label">0 ≤ x ≤ 16</span></div>
+        <div id="machine-controls" class="machine-controls" aria-label="Machine controls" hidden></div>
+        <div class="transport">
+          <button id="play" class="play-button" type="button" aria-label="Play sound" title="Play (Space)"><svg id="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 11 7-11 7Z"/></svg><span id="play-label" class="sr-only">Play sound</span></button>
+          <button id="restart" class="icon-button" type="button" aria-label="Restart pattern" title="Restart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 8M4 4v6h6"/></svg></button>
+          <span class="time" id="time">0:00 <span>/ 0:07</span></span>
+          <div class="progress-track" id="progress-track" role="slider" tabindex="0" aria-label="Playback position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progress"></div></div>
+          <label class="volume" title="Volume"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 5-6 5H2v4h3l6 5ZM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg><span class="sr-only">Volume</span><input id="volume" type="range" min="0" max="100" value="35" aria-label="Volume"><output id="volume-value" class="sr-only">35%</output></label>
+        </div>
+      </section>
+
+      <section class="equation-mini" aria-label="Equation"><div class="equation" id="equation-mini" aria-hidden="true"></div><button id="open-details" class="button secondary" type="button" aria-controls="details" aria-expanded="false">Details</button></section>
+
+      <aside class="side" id="details" aria-label="Pattern details">
+        <div class="sheet-head"><span>Details</span><button id="close-details" class="icon-button" type="button" aria-label="Close details"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+        <article class="panel equation-panel" aria-labelledby="equation-title">
+          <h2 class="panel-title" id="equation-title">Equation</h2>
+          <div class="equation" id="equation" aria-label="Generated equation"></div>
+          <div id="pattern-info" class="pattern-notes">
+            <button id="toggle-description" class="disclosure" type="button" aria-expanded="false" aria-controls="pattern-definitions"><span>Show description</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+            <p id="pattern-definitions"></p>
+            <div class="pattern-meta"><span id="pattern-voice" class="voice-tag"></span><a id="pattern-reference" target="_blank" rel="noopener noreferrer">Reference<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a></div>
+          </div>
+        </article>
+        <article class="panel settings-panel" aria-labelledby="settings-title">
+          <h2 class="panel-title" id="settings-title">Playback</h2>
+          <div class="field-row">
+          <div class="field"><label for="sound-mode">Sound</label><select id="sound-mode" data-segmented><option value="vivid">Vivid</option><option value="original">Original</option></select></div>
+          <div class="field"><label for="scan-duration">Length</label><select id="scan-duration" data-segmented><option value="7">7 s</option><option value="14">14 s</option></select></div>
+          </div>
+          <form class="field seed-form" id="seed-form">
+            <label for="seed">Seed</label>
+            <div class="seed-row"><div class="seed-input"><input id="seed" name="seed" type="text" autocomplete="off" spellcheck="false" maxlength="128"><button id="copy" class="icon-button" type="button" aria-label="Copy seed" title="Copy seed"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button></div><button class="button secondary load-seed" type="submit" title="Load seed">Load</button></div>
+          </form>
+        </article>
+      </aside>
+      </div>
+    </main>
+  </div>
+  <p id="status" class="toast" role="status" aria-live="polite" hidden></p>
 </body>
 </html>

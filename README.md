@@ -1,6 +1,6 @@
 # Sonograph
 
-See a mathematical pattern, then hear it play. Sonograph is a browser-based collection of 191 seeded patterns across 29 categories, from number sequences turned into melodies, rhythm rules, acoustic illusions, and bytebeat one-liners to continuous pitch curves, cartoon sounds, geometric scores, and miniature music machines.
+See a mathematical pattern, then hear it play. Sonograph is a browser-based collection of 205 seeded patterns across 29 categories, from number sequences turned into melodies, rhythm rules, acoustic illusions, and bytebeat one-liners to continuous pitch curves, cartoon sounds, geometric scores, and miniature music machines.
 
 **[Open Sonograph](https://prit36.github.io/Sonograph/)**
 
@@ -35,7 +35,7 @@ Click **Play sound** to enable audio. Playback pauses when the page goes into th
 
 | Control | Action |
 | --- | --- |
-| Library | Browse and search all 191 patterns by category. On narrow screens, open it with Browse. |
+| Library | Browse and search all 205 patterns by category. On narrow screens, open it with Browse. |
 | Next pattern | Generate a new seeded pattern. |
 | Play / Pause / Restart | Control playback and the visual scan. |
 | Progress bar | Click or drag to seek; arrow keys step through the scan. |

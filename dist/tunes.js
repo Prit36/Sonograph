@@ -119,6 +119,84 @@
       definitions:'Notes are whole-number multiples of one fundamental, the only notes a natural horn can play. Harmonics 7, 11 and 13 sit between the piano keys and sound bent. The organ holds f₁.'};
   });
 
+  add('gray_chorale','Gray code chorale','Number tunes',oeis('A003188'),c=>{
+    const pairs=[[0,1],[2,3],[4,5],[6,7]],organ=c.layer('Organ','toy',.5,{song:true,tone:'organ'}),harp=c.layer('Harp','pluck',.8),bass=c.layer('Bass','toy',.6,{tone:'bass'});
+    for(let k=0;k<16;k++){
+      const g=k^(k>>1),chord=pairs.map(([low,high],i)=>deg(scales.major,g>>i&1?high:low));
+      chord.forEach(n=>put(organ,4*k,3.9,n,null,.7));put(bass,4*k,3.6,chord[0]-12);
+      chord.forEach((n,i)=>put(harp,4*k+i,1.6,n+12,null,i?.75:1));
+    }
+    return {formula:'g(k) = k XOR ⌊k/2⌋<br>voice<sub>i</sub>(k) = M[2i + bit<sub>i</sub>(g(k))]',
+      definitions:'Consecutive Gray codes differ in exactly one bit, so each new chord moves a single voice by one scale step. Sixteen beats visit all sixteen four-bit codes: every chord between Cmaj7 and Dm7, with perfectly smooth voice leading.'};
+  });
+  add('sieve_groove','Sieve groove','Number tunes',wiki('Sieve_of_Eratosthenes'),c=>{
+    const kit=c.layer('Kit','drums',.6),bell=c.layer('Bells','spectral',.75,{tone:'crystal'}),bass=c.layer('Bass','toy',.6,{tone:'bass'});
+    const isPrime=n=>{for(let d=2;d*d<=n;d++)if(n%d===0)return false;return n>1};
+    for(let i=0;i<64;i++){
+      const n=i+2;
+      if(n%2===0)put(kit,i,1,0,'hat',.35);
+      if(n%3===0)put(kit,i,2,0,'kick',.85);
+      if(n%5===0)put(kit,i,1.5,0,'clap',.6);
+      if(n%7===0)put(bass,i,3,[-12,-2][(n/7)%2]);
+      if(n>7&&isPrime(n))put(bell,i,3,n%12-1+12,null,.9);
+    }
+    return {formula:'n = 2, 3, …, 65<br>voice p plays when p | n, for p = 2, 3, 5, 7<br>bell(n) = (n mod 12) − 1, when n > 7 is prime',
+      definitions:'Hi-hat, kick, clap and bass are the sieves of 2, 3, 5 and 7, so composite numbers sound as their prime factors together. The bells ring only on primes. Every prime above 3 is 1, 5, 7 or 11 mod 12, so the bells use just four pitches.'};
+  });
+  add('look_and_say','Look and say','Number tunes',oeis('A005150'),c=>{
+    const terms=['1'];while(terms.join('').length+terms.length<64){terms.push(terms.at(-1).replace(/(\d)\1*/g,run=>run.length+run[0]))}
+    const lead=c.layer('Chip','toy',.85,{song:true,tone:'chip'}),bass=c.layer('Bass','toy',.6,{tone:'bass'}),kit=c.layer('Kit','drums',.35);
+    let step=0;terms.forEach((term,t)=>{
+      put(bass,step,Math.min(term.length+1,8),[0,-3,-7,-5][t%4]-12);if(step%4===0)put(kit,step,1,0,'kick',.7);
+      for(const [i,d]of [...term].entries()){if(step>=64)break;put(lead,step,.9,deg(scales.major,2*(+d-1))+12,null,i?.75:1);if(i%2)put(kit,step,1,0,'hat',.3);step++}
+      step++;
+    });
+    return {formula:'1, 11, 21, 1211, 111221, 312211, …<br>each term reads the previous one aloud<br>note = M[2(d − 1)] for each digit d',
+      definitions:'"1211" is one 1, one 2, two 1s, so the next term is 111221. Only the digits 1, 2 and 3 ever appear, so the melody stays on one major triad while the phrases grow by about 30% each time. The bass changes chord with every term.'};
+  });
+  add('koch_melody','Koch curve melody','Number tunes',wiki('Koch_snowflake'),c=>{
+    let dirs=[0];for(let level=0;level<3;level++){const next=[];for(const d of dirs)next.push(d,d+1,d-1,d);dirs=next}
+    let y=0;const heights=dirs.map(d=>y+=Math.sin(d*Math.PI/3));
+    const lead=c.layer('Marimba','toy',.9,{song:true,tone:'marimba'}),bass=c.layer('Bass','toy',.55,{tone:'bass'});
+    heights.forEach((h,i)=>{const n=Math.round(1.5*h);put(lead,i,1.3,deg(scales.major,n),null,dirs[i]===0?1:.75);if(i%4===0)put(bass,i,3.8,deg(scales.major,n-7))});
+    return {formula:'F → F + F − F + F, turns of ±60°<br>y<sub>i</sub> = Σ<sub>j≤i</sub> sin(60° d<sub>j</sub>)<br>note(i) = M[round(1.5 y<sub>i</sub>)]',
+      definitions:'Three rewriting steps give the 64 segments of the Koch curve. The melody follows the height of the curve after each segment, so the graph of the notes traces the familiar snowflake edge: bumps on bumps on bumps.'};
+  });
+  add('hilbert_walk','Hilbert curve counterpoint','Number tunes',wiki('Hilbert_curve'),c=>{
+    const point=d=>{let x=0,y=0,t=d;for(let s=1;s<8;s*=2){const rx=1&(t>>1),ry=1&(t^rx);if(!ry){if(rx){x=s-1-x;y=s-1-y}[x,y]=[y,x]}x+=s*rx;y+=s*ry;t>>=2}return [x,y]};
+    const upper=c.layer('Pluck','pluck',.85),lower=c.layer('Marimba','toy',.7,{song:true,tone:'marimba'});
+    for(let d=0;d<64;d++){const [x,y]=point(d);put(upper,d,1.4,deg(scales.dorian,x+y),null,d%4?.8:1);if(d%2===0)put(lower,d,2,deg(scales.dorian,x-y)-12)}
+    return {formula:'(x<sub>d</sub>, y<sub>d</sub>) = Hilbert curve on an 8 × 8 grid<br>upper(d) = D[x + y]<br>lower(d) = D[x − y]',
+      definitions:'The Hilbert curve visits all 64 cells, always moving to a neighbouring cell. Each move changes x + y and x − y by exactly one, so both voices only ever move by step, often in contrary motion.'};
+  });
+  add('julia_orbits','Julia set orbits','Number tunes',wiki('Julia_set'),c=>{
+    const cs=[[-1,0],[-.1226,.7449],[-1.3107,0],[-.5,.56]],roots=[0,-4,-2,-5];
+    const lead=c.layer('Crystal','spectral',.85,{tone:'crystal'}),bass=c.layer('Bass','toy',.6,{tone:'bass'}),kit=c.layer('Kit','drums',.4);
+    cs.forEach(([a,b],bar)=>{
+      let x=0,y=0;
+      for(let n=0;n<16;n++){[x,y]=[x*x-y*y+a,2*x*y+b];put(lead,16*bar+n,1.2,deg(scales.minpenta,Math.round(4*x+3*y))+12,null,n%4?.8:1)}
+      put(bass,16*bar,7.5,roots[bar]-12);put(bass,16*bar+8,7.5,roots[bar]-5,null,.8);
+      for(let k=0;k<4;k++){put(kit,16*bar+4*k,1.5,0,'kick',.7);put(kit,16*bar+4*k+2,1,0,'hat',.35)}
+    });
+    return {formula:'z<sub>n+1</sub> = z<sub>n</sub>² + c, z<sub>0</sub> = 0<br>note(n) = P[round(4 Re z<sub>n</sub> + 3 Im z<sub>n</sub>)]<br>c = −1, −0.12 + 0.74i, −1.31, −0.5 + 0.56i',
+      definitions:'Each bar uses a different c. After a short approach, the orbit of 0 falls into a cycle of length 2, 3 (the Douady rabbit), 4 and then 5, so each bar settles into a riff one note longer than the last. P is the minor pentatonic scale.'};
+  });
+  add('random_walk','Random walk','Number tunes',wiki('Random_walk'),c=>{
+    const lead=c.layer('Chip','toy',.85,{song:true,tone:'chip'}),bass=c.layer('Bass','toy',.6,{tone:'bass'}),kit=c.layer('Kit','drums',.45);
+    let w=5;
+    for(let i=0;i<64;i++){
+      const r=c.rand(),size=r<.35?-1:r<.7?1:r<.85?-2:2;w+=size;if(w<0)w=-w;if(w>12)w=24-w;
+      if(c.rand()>.15||i%4===0)put(lead,i,1.2,deg(scales.minpenta,w),null,i%4?.75:1);
+    }
+    for(let bar=0;bar<4;bar++){
+      const root=[0,-4,3,-2][bar];
+      [0,6,8,14].forEach((k,j)=>put(bass,16*bar+k,j%2?1.5:4,root-12,null,j%2?.7:1));
+      [0,8].forEach(k=>put(kit,16*bar+k,2,0,'kick'));[4,12].forEach(k=>put(kit,16*bar+k,1.5,0,'snare',.7));for(let k=2;k<16;k+=4)put(kit,16*bar+k,1,0,'hat',.3);
+    }
+    return {formula:'w<sub>n+1</sub> = w<sub>n</sub> + s<sub>n</sub>, reflected inside 0 ≤ w ≤ 12<br>s<sub>n</sub> ∈ {±1 (70%), ±2 (30%)}<br>note(n) = P[w<sub>n</sub>]',
+      definitions:'Every seed rolls a different walk: mostly single steps with occasional leaps, bouncing off the edges of a two-and-a-half-octave minor pentatonic range. About one note in seven is a rest.'};
+  });
+
   // === Rhythm rules ===
   const euclid=(k,n,i,rot=0)=>mod((i+rot)*k,n)<k;
   add('euclid','Euclid\'s dance floor','Rhythm rules','http://cgm.cs.mcgill.ca/~godfried/publications/banff.pdf',c=>{
@@ -165,6 +243,30 @@
     for(let k=0;k<16;k++){put(kit,4*k,2,0,'kick');put(kit,4*k+2,1,0,'hat',.45);if(k%2)put(kit,4*k,1.5,0,'clap',.6)}
     return {formula:'v<sub>n+1</sub> = r<sub>n</sub> v<sub>n</sub> (1 − v<sub>n</sub>)<br>r<sub>n</sub> = 2.9 + 1.1 n / 63<br>note(n) = A[round(10 v<sub>n</sub>)]',
       definitions:'As r rises, the orbit settles on one note, then alternates between two, then four, and becomes chaotic near r = 3.57. A is the natural minor scale.'};
+  });
+
+  add('game_of_life','Game of Life sequencer','Rhythm rules',wiki('Conway%27s_Game_of_Life'),c=>{
+    const starts={'a glider and a blinker':[[0,1],[1,2],[2,0],[2,1],[2,2],[5,4],[5,5],[5,6]],'the R-pentomino':[[3,4],[3,5],[4,3],[4,4],[5,4]],'a glider and a beacon':[[0,1],[1,2],[2,0],[2,1],[2,2],[4,4],[4,5],[5,4],[6,7],[7,6],[7,7],[6,6]]};
+    const name=c.pick(Object.keys(starts));let grid=Array.from({length:8},()=>Array(8).fill(0));for(const [r,col]of starts[name])grid[r][col]=1;
+    const mallet=c.layer('Marimba','toy',.85,{song:true,tone:'marimba'}),bass=c.layer('Bass','toy',.55,{tone:'bass'}),kit=c.layer('Kit','drums',.4);
+    for(let g=0;g<8;g++){
+      let alive=0;
+      for(let col=0;col<8;col++){const rows=[];for(let r=0;r<8;r++)if(grid[r][col])rows.push(r);alive+=rows.length;rows.forEach(r=>put(mallet,8*g+col,1.4,deg(scales.penta,7-r)+12,null,rows.length>2?.6:.85))}
+      put(bass,8*g,7.5,deg(scales.penta,alive%5)-12);put(kit,8*g,2,0,'kick',.8);put(kit,8*g+4,1,0,'hat',.4);
+      grid=grid.map((row,r)=>row.map((v,col)=>{let n=0;for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(dr||dc)n+=grid[mod(r+dr,8)][mod(col+dc,8)];return n===3||v&&n===2?1:0}));
+    }
+    return {formula:'cell<sub>g+1</sub> = 1 with 3 live neighbours, or alive with 2<br>column j of generation g plays at step 8g + j<br>row r sounds P[7 − r]',
+      definitions:`An 8 × 8 wrap-around Game of Life starts from ${name}. Each generation is one bar of eight sixteenths, read left to right like a step sequencer, so the moving shapes become changing chords and riffs. The bass counts the live cells.`};
+  });
+  add('tempo_canon','Tempo canon 2:3:4','Rhythm rules',wiki('Conlon_Nancarrow'),c=>{
+    const M=c.pick([[0,2,4,3,5,4,2,1],[0,4,2,5,4,7,5,2],[4,3,2,0,1,2,4,6]]);
+    const voices=[[2,'Bass','toy',{tone:'bass'},-12,.7],[3,'Marimba','toy',{song:true,tone:'marimba'},0,.8],[4,'Pluck','pluck',{},12,.75]];
+    for(const [r,name,instrument,extra,octave,weight]of voices){
+      const layer=c.layer(name,instrument,weight,extra),length=8/r;
+      for(let i=0;i<8*r;i++)put(layer,i*length,length*.92,deg(scales.penta,M[i%8])+octave,null,i%8?.8:1);
+    }
+    return {formula:`voice<sub>r</sub>(x) = P[M<sub>⌊r x / 2⌋ mod 8</sub>], r = 2, 3, 4<br>M = (${M.join(', ')})`,
+      definitions:'The same eight-note melody plays at three speeds in the ratio 2:3:4: two, three and four times through. The voices drift apart, meet again where the ratios line up, and all finish together at x = 16. Conlon Nancarrow built whole pieces from tempo canons like this.'};
   });
 
   // === Illusions ===
@@ -219,6 +321,28 @@
       definitions:'A single FM operator plays the bass line. The modulation index I(x) opens and closes the brightness; its rate w changes each bar, so the wobble speeds up, doubles and turns into triplets.',rootHz:98};
   });
 
+  add('risset_rhythm','Endless accelerando','Illusions',wiki('Risset_rhythm'),c=>{
+    const T=8,N=3,wood=c.layer('Wood','toy',1,{tone:'wood'}),Phi=x=>T*(2**(x/T)-1)/Math.LN2;
+    for(let j=-2;j<=3;j++){
+      let last=null;
+      for(let x=0;x<16;x+=.002){
+        const p=j+x/T;if(p<0||p>=N){last=null;continue}
+        const count=Math.floor(2**j*Phi(x));
+        if(last!==null&&count>last)put(wood,x/STEP,.5,12,null,Math.exp(-(((p-N/2)/.75)**2)));
+        last=count;
+      }
+    }
+    return {formula:'Φ(x) = T (2<sup>x/T</sup> − 1) / ln 2, T = 8<br>layer j hits when ⌊2<sup>j</sup> Φ(x)⌋ increases<br>loudness = e<sup>−((j + x/T − 1.5)/0.75)²</sup>',
+      definitions:'Pulse layers an octave of tempo apart all speed up together, doubling every eight beats. Fast layers fade out as slow ones fade in, so the beat seems to accelerate forever without ever getting faster. It is the rhythmic twin of the Shepard tone.'};
+  });
+  add('missing_fundamental','Missing fundamental','Illusions',wiki('Missing_fundamental'),c=>{
+    const tune=c.pick([[0,2,4,5,7,5,4,2,0,4,7,9,7,4,2,0],[0,4,7,4,5,9,7,4,2,5,4,2,0,2,-1,0]]);
+    const note=x=>deg(scales.major,tune[clamp(Math.floor(x),0,15)]),art=x=>.2+.8*Math.exp(-3.5*mod(x,1));
+    [1,2,3,4].forEach(k=>c.layer('Sine','',[1,.75,.6,.5][k-1],{f:x=>(note(x)+12*Math.log2(k))/SEMI,voice:'Sine',pure:true,envelope:k===1?x=>art(x)*clamp((8.2-x)/.4,0,1):art}));
+    return {formula:'y(t) = Σ<sub>k = k₀…4</sub> sin(2π k f(t) t)<br>k₀ = 1 for x < 8, k₀ = 2 for x ≥ 8',
+      definitions:'The same tune plays twice as a stack of four harmonics. Halfway through, the fundamental is removed, yet the melody is still heard at the same low pitch, reconstructed by the ear from the spacing of the upper harmonics. Small speakers rely on this effect for bass.',rootHz:130.81};
+  });
+
   // === Bytebeat: a raw 8-bit sample stream from one integer expression ===
   const bytebeat=(id,name,expression,code,credit)=>add('bb_'+id,name,'Bytebeat',bytebeatPost,c=>{
     const offset=c.pick([0,1<<16,1<<17,3<<16]);
@@ -229,6 +353,9 @@
   bytebeat('five_three','Five and three',t=>(t*5&t>>7)|(t*3&t>>10),'(5t & t ≫ 7) | (3t & t ≫ 10)','Posted by viznut in 2011.');
   bytebeat('forty_two','The 42 melody',t=>t*(42&t>>10),'t · (42 & t ≫ 10)','A widely shared bytebeat from 2011.');
   bytebeat('primes','Mod 24, mod 19',t=>(t>>13|t%24)&(t>>7|t%19),'(t ≫ 13 | t mod 24) & (t ≫ 7 | t mod 19)','Posted in the comments of viznut\'s 2011 article.');
+  bytebeat('eighty_two','Eighty-two',t=>t*((t>>3|t>>9)&82&t>>9),'t · ((t ≫ 3 | t ≫ 9) & 82 & t ≫ 9)','Posted anonymously in the comments of viznut\'s 2011 article.');
+  bytebeat('niklas','Thirteen sixteen',t=>t*(t>>9|t>>13)&16,'t · (t ≫ 9 | t ≫ 13) & 16','Posted by Niklas Roy in the comments of viznut\'s 2011 article.');
+  bytebeat('tangent','Tangent shuffle',t=>t*(((t>>9)&10)|((t>>11)&24)^((t>>10)&15&(t>>15))),'t · ((t ≫ 9 & 10) | (t ≫ 11 & 24) ^ (t ≫ 10 & 15 & t ≫ 15))','Posted by tangent128 in the comments of viznut\'s 2011 article.');
   bytebeat('sierpinski','Sierpinski harmony',t=>t&t>>8,'t & t ≫ 8','Posted by viznut in 2011; its bit pattern draws a Sierpinski triangle.');
 
   const byId=new Map(entries.map(e=>[e.id,e]));
@@ -236,7 +363,7 @@
   api.generate=function(seed,options={}){
     const entry=byId.get(/^sg2-([a-z_]+)--/.exec(seed)?.[1]);if(!entry)return previousGenerate(seed,options);
     const preview=/--preview$/.test(seed),random=rng('sonograph-tunes:'+seed),layers=[];
-    const c={pick:list=>preview?list[0]:list[Math.floor(random()*list.length)],
+    const c={rand:random,pick:list=>preview?list[0]:list[Math.floor(random()*list.length)],
       layer:(name,instrument,weight,extra={})=>{const layer={voice:name,weight,...(instrument?{instrument,events:[]}:{}),...extra};layers.push(layer);return layer}};
     const built=entry.build(c),transpose=preview?0:hash(seed)%5,base={seed,version:2,type:entry.id,name:entry.name,group:entry.group,family:entry.group.toUpperCase(),description:'',reference:entry.reference,definitions:built.definitions,formula:built.formula};
     if(built.sampler){

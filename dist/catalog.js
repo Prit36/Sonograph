@@ -277,7 +277,7 @@
   const partials={Sine:[[1,1]],Hollow:[[1,1],[3,.3],[5,.12]],Reed:[[1,1],[2,.55],[3,.3],[4,.18]],Organ:[[1,1],[2,.7],[4,.32]],Bell:[[1,1],[2.76,.45],[5.4,.18]],Glass:[[1,1],[2.41,.4],[4.7,.16]],Triangle:[[1,1],[3,-1/9],[5,1/25]],Pulse:[[1,1],[2,.65],[3,.2],[5,.22]]};
   function synthesize(pattern,sampleRate=48000){
     if(pattern.version!==2)return legacySynthesize(pattern,sampleRate);
-    const data=new Float32Array(Math.round(pattern.duration*sampleRate)),voice=partials[pattern.voice],norm=voice.reduce((s,v)=>s+Math.abs(v[1]),0);
+    const data=new Float32Array(Math.round(pattern.duration*sampleRate)),voice=partials[pattern.voice]||partials.Reed,norm=voice.reduce((s,v)=>s+Math.abs(v[1]),0);
     const values=Float64Array.from({length:8193},(_,i)=>{const y=pattern.f(-8+16*i/8192);return Number.isFinite(y)?clamp(y,-4,4):0});let phase=0,smoothed=values[0];
     for(let i=0;i<data.length;i++){
       const t=i/sampleRate,u=i/(data.length-1)*8192,j=Math.min(8191,Math.floor(u)),y=values[j]+(values[j+1]-values[j])*(u-j);

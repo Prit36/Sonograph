@@ -147,6 +147,21 @@
     for(let i=0;i<length;i++)data[i]*=gain;
     return data;
   }
+  // Bytebeat: an 8-bit sample stream at 8 kHz, held between samples, lightly smoothed.
+  function renderSampler(part,sampleRate){
+    const length=Math.round(part.duration*sampleRate),data=new Float32Array(length);
+    const smoothing=1-Math.exp(-TAU*6500/sampleRate),dcSmoothing=1-Math.exp(-TAU*10/sampleRate);
+    let y=0,dc=0,power=0,peak=0;
+    for(let i=0;i<length;i++){
+      const x=part.minX+(part.maxX-part.minX)*i/length,v=(part.sampler(Math.floor(x*8000))&255)/127.5-1;
+      y+=(v-y)*smoothing;dc+=(y-dc)*dcSmoothing;
+      const t=i/sampleRate,sample=(y-dc)*Math.max(0,Math.min(1,t/.01,(part.duration-t)/.05));
+      data[i]=sample;power+=sample*sample;peak=Math.max(peak,Math.abs(sample));
+    }
+    const gain=Math.min(.22/Math.max(1e-9,Math.sqrt(power/length)),.8/Math.max(1e-9,peak));
+    for(let i=0;i<length;i++)data[i]*=gain;
+    return data;
+  }
   // Layered video examples keep independent pitch traces. Undefined branches rest.
   api.renderAudio=function(pattern,sampleRate=48000,mode='vivid'){
     const tracks=pattern.layers||[{}],length=Math.round(pattern.duration*sampleRate);
@@ -156,7 +171,7 @@
       // The original catalog renderer scans −8…8 internally; adapt new domains.
       const adapted=mode==='original'&&part.version===2&&(part.minX!==-8||part.maxX!==8)?{...part,f:x=>originalF(part.minX+(x+8)/16*(part.maxX-part.minX))}:part;
       const events=mode==='vivid'&&part.instrument&&part.events;
-      const data=events?renderEvents(part,sampleRate):mode==='original'?api.synthesize(adapted,sampleRate):synthesizeVivid(part,sampleRate);
+      const data=part.sampler?renderSampler(part,sampleRate):events?renderEvents(part,sampleRate):mode==='original'?api.synthesize(adapted,sampleRate):synthesizeVivid(part,sampleRate);
       let gate=Number.isFinite(originalF(part.minX))?1:0;
       const smoothing=1-Math.exp(-1/(sampleRate*.0008));
       for(let i=0;i<length;i++){

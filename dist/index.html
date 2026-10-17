@@ -24,8 +24,9 @@
   <script src="kinetic-scores.js?v=20261008-final" defer></script>
   <script src="curve-play.js?v=20261008-final" defer></script>
   <script src="continuous-curves.js?v=20261008-final" defer></script>
-  <script src="sound.js?v=20261008-continuous" defer></script>
-  <script src="player.js?v=20261008-curves" defer></script>
+  <script src="tunes.js?v=20261017" defer></script>
+  <script src="sound.js?v=20261017-bytebeat" defer></script>
+  <script src="player.js?v=20261017" defer></script>
   <script src="machine-controls.js" defer></script>
   <script src="collection.js?v=20261008-curves" defer></script>
   <link rel="stylesheet" href="machines.css">
@@ -34,10 +35,10 @@
   <main class="app">
     <header class="header">
       <a class="brand" href="./" aria-label="Sonograph home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 16q4-18 8 0t8 0 10 0"/></svg><span>sonograph<span class="brand-dot">.</span></span></a>
-      <button id="open-collection" class="button secondary collection-button" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Collection <span class="collection-count">168</span></button>
+      <button id="open-collection" class="button secondary collection-button" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Collection <span class="collection-count">191</span></button>
     </header>
     <section class="workspace" aria-label="Mathematical sound explorer">
-      <div class="workspace-head"><div><h1 id="pattern-name">Phase marimbas</h1></div><button id="next" class="button primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4M4 7h16M8 13l-4 4 4 4m12-4H4"/></svg>Next pattern</button></div>
+      <div class="workspace-head"><div><h1 id="pattern-name">Recamán's leaps</h1></div><button id="next" class="button primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 4 4-4 4M4 7h16M8 13l-4 4 4 4m12-4H4"/></svg>Next pattern</button></div>
       <div class="plot-shell"><canvas id="plot" role="img" aria-label="Graph of the generated mathematical function"></canvas><div class="plot-caption"><span id="domain-label">−8 ≤ x ≤ 8</span></div></div>
       <div id="machine-controls" class="machine-controls" aria-label="Machine controls" hidden></div>
       <div class="equation" id="equation" aria-label="Generated equation"></div>
@@ -52,7 +53,7 @@
   <dialog id="collection-dialog" aria-labelledby="collection-title">
     <div class="collection-header"><div><h2 id="collection-title">Pattern collection</h2></div><button id="close-collection" class="icon-button" aria-label="Close collection"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
     <div class="collection-filters"><label class="collection-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><span class="sr-only">Search patterns</span><input id="collection-search" type="search" placeholder="Search patterns…" autocomplete="off"></label><label><span class="sr-only">Pattern category</span><select id="collection-category" aria-label="Pattern category"><option value="all">All categories</option></select></label></div>
-    <div class="collection-results"><span id="collection-results-count" role="status">168 patterns</span></div>
+    <div class="collection-results"><span id="collection-results-count" role="status">191 patterns</span></div>
     <div id="collection-grid" class="collection-grid"></div>
     <p id="collection-empty" class="collection-empty" hidden>No matching patterns.</p>
   </dialog>

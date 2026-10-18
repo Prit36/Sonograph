@@ -1,6 +1,26 @@
 'use strict';
 const $=id=>document.getElementById(id),canvas=$('plot'),ctx=canvas.getContext('2d');
-let pattern,position=0,playing=false,audioContext,master,analyser,signal,source,sourceGain,buffer,startTime=0,requestId=0,starting=false,graphSamples;
+let pattern,patternSeed,position=0,playing=false,audioContext,master,analyser,signal,source,sourceGain,buffer,startTime=0,requestId=0,starting=false,graphSamples;
+// Audio is rendered in a worker so switching patterns during playback never blocks the interface.
+let renderer,renderSeq=0;const renderJobs=new Map();
+function rejectRenders(message){for(const job of renderJobs.values())job.reject(new Error(message));renderJobs.clear()}
+function getRenderer(){
+  if(renderer!==undefined)return renderer;
+  try{
+    renderer=new Worker('render-worker.js?v=20261018-render');
+    renderer.onmessage=({data})=>{const job=renderJobs.get(data.id);if(!job)return;renderJobs.delete(data.id);data.error?job.reject(new Error(data.error)):job.resolve(data.samples)};
+    renderer.onerror=()=>{const dead=renderer;renderer=null;dead.terminate();rejectRenders('Renderer stopped.')};
+  }catch{renderer=null}
+  return renderer;
+}
+function renderSamples(seed,duration,mode){
+  const id=++renderSeq;
+  // Earlier renders are stale; restart the worker rather than queue behind them.
+  if(renderJobs.size&&renderer){renderer.terminate();renderer=undefined;rejectRenders('Superseded.')}
+  const worker=getRenderer();
+  if(!worker)return Promise.resolve(Sonograph.renderAudio({...Sonograph.generate(seed),duration},48000,mode));
+  return new Promise((resolve,reject)=>{renderJobs.set(id,{resolve,reject});worker.postMessage({id,seed,duration,mode})});
+}
 const settings=new URLSearchParams(location.search);
 let soundMode=settings.get('sound')==='original'?'original':'vivid',scanDuration=settings.get('scan')==='14'||(!settings.has('scan')&&soundMode==='original')?14:7;
 $('sound-mode').value=soundMode;$('scan-duration').value=String(scanDuration);
@@ -20,7 +40,7 @@ function currentPosition(){return playing&&audioContext?Sonograph.clamp(audioCon
 function stop(){requestId++;starting=false;position=currentPosition();playing=false;if(source){const oldSource=source,oldGain=sourceGain,now=audioContext.currentTime;oldSource.onended=()=>{oldSource.disconnect();oldGain.disconnect()};oldGain.gain.cancelScheduledValues(now);oldGain.gain.setTargetAtTime(0,now,.003);try{oldSource.stop(now+.018)}catch{oldSource.disconnect();oldGain.disconnect()}source=null;sourceGain=null}updateTransport()}
 function load(seed,continuePlayback=false){
   if(typeof seed!=='string'||!seed.trim()||seed.trim().length>128)throw new Error('Use a seed with 1-128 characters.');
-  seed=seed.trim();const generated=Sonograph.generate(seed);stop();pattern=generated;buffer=null;position=0;
+  seed=seed.trim();const generated=Sonograph.generate(seed);stop();pattern=generated;patternSeed=seed;buffer=null;position=0;
   recentTypes.push(pattern.type);if(recentTypes.length>16)recentTypes.shift();
   graphSamples=(pattern.layers||[{f:pattern.f}]).map(layer=>Float64Array.from({length:2561},(_,i)=>layer.f(pattern.minX+(pattern.maxX-pattern.minX)*i/2560)));
   $('seed').value=seed;$('pattern-name').textContent=pattern.name;
@@ -51,14 +71,14 @@ async function play(){
       audioContext.addEventListener('statechange',()=>{if(playing&&audioContext.state==='suspended'){stop();draw();status('')}});
     }
     await audioContext.resume();if(id!==requestId)return;
-    if(!buffer){const scan={...pattern,duration:scanDuration},data=Sonograph.renderAudio(scan,48000,soundMode);buffer=audioContext.createBuffer(1,data.length,48000);buffer.copyToChannel(data,0)}
+    if(!buffer){const data=await renderSamples(patternSeed,scanDuration,soundMode);if(id!==requestId)return;buffer=audioContext.createBuffer(1,data.length,48000);buffer.copyToChannel(data,0)}
     if(position>=scanDuration-.01)position=0;
     source=audioContext.createBufferSource();source.buffer=buffer;sourceGain=audioContext.createGain();source.connect(sourceGain);sourceGain.connect(master);
     sourceGain.gain.setValueAtTime(0,audioContext.currentTime);sourceGain.gain.linearRampToValueAtTime(1,audioContext.currentTime+.008);
     startTime=audioContext.currentTime-position;playing=true;starting=false;
     source.onended=()=>{if(id!==requestId)return;playing=false;position=scanDuration;source.disconnect();sourceGain.disconnect();source=null;sourceGain=null;updateTransport();draw();status('')};
     source.start(0,position);updateTransport();status('');
-  }catch(error){starting=false;playing=false;updateTransport();status('Could not start audio. Press Play to try again.',true)}
+  }catch(error){if(id!==requestId)return;starting=false;playing=false;updateTransport();status('Could not start audio. Press Play to try again.',true)}
 }
 function draw(){
   const bounds=canvas.getBoundingClientRect(),ratio=Math.min(devicePixelRatio||1,2),w=bounds.width,h=bounds.height;
